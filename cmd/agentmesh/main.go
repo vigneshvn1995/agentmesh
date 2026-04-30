@@ -46,7 +46,7 @@ func main() {
 	shutdown, err := telemetry.InitProvider(ctx, lc.Config)
 	if err != nil {
 		slog.Error("failed to initialise OpenTelemetry", "error", err)
-		os.Exit(1)
+		os.Exit(1) //nolint:gocritic // exitAfterDefer: fatal init error, cancel() skipped intentionally
 	}
 	defer func() {
 		if err := shutdown(context.Background()); err != nil {
@@ -117,7 +117,7 @@ func main() {
 		)
 		if err != nil {
 			slog.Error("failed to initialise Qdrant store", "error", err)
-			os.Exit(1)
+			os.Exit(1) //nolint:gocritic // exitAfterDefer: fatal init error, cancel() skipped intentionally
 		}
 
 		embedder := cache.NewOpenAIEmbedder(
@@ -141,7 +141,7 @@ func main() {
 	srv, err := proxy.NewServer(lc)
 	if err != nil {
 		slog.Error("failed to create proxy server", "error", err)
-		os.Exit(1)
+		os.Exit(1) //nolint:gocritic // exitAfterDefer: fatal init error, cancel() skipped intentionally
 	}
 
 	// Wire the middleware chain:
