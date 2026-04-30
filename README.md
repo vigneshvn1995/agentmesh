@@ -1,4 +1,3 @@
-?
 [![CI](https://github.com/vigneshvn1995/agentmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/vigneshvn1995/agentmesh/actions/workflows/ci.yml)
 [![Go 1.26](https://img.shields.io/badge/go-1.26-blue.svg)](https://golang.org/dl/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
