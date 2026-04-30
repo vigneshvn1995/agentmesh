@@ -29,26 +29,26 @@ AgentMesh is a **middleware fabric** — not merely a reverse proxy. A reverse p
 ```mermaid
 graph TB
     subgraph Callers
-        A1[Agent / App 1<br>Bearer am_key_acme]
-        A2[Agent / App 2<br>Bearer am_key_beta]
+        A1["Agent / App 1<br/>Bearer am_key_acme"]
+        A2["Agent / App 2<br/>Bearer am_key_beta"]
     end
 
     subgraph AgentMesh Process
         direction TB
-        AUTH[AuthMiddleware<br>O(1) tenant lookup]
-        OTEL[OTel Span<br>otelhttp.NewHandler]
-        GRD[GuardrailMiddleware<br>body limit · stream block · loop breaker]
-        CACHE[CacheMiddleware<br>embed → search → HIT or MISS]
-        BUDGET[BudgetMiddleware<br>pre-flight check · post-flight record]
-        PROXY[HandleProxy<br>credential swap · ReverseProxy]
+        AUTH["AuthMiddleware<br/>O(1) tenant lookup"]
+        OTEL["OTel Span<br/>otelhttp.NewHandler"]
+        GRD["GuardrailMiddleware<br/>body limit · stream block · loop breaker"]
+        CACHE["CacheMiddleware<br/>embed → search → HIT or MISS"]
+        BUDGET["BudgetMiddleware<br/>pre-flight check · post-flight record"]
+        PROXY["HandleProxy<br/>credential swap · ReverseProxy"]
     end
 
     subgraph External Services
-        REDIS[(Redis<br>budget counters)]
-        QDRANT[(Qdrant<br>vector index)]
-        EMBED[Embeddings API<br>text-embedding-3-small]
-        LLM[Upstream LLM<br>OpenAI / Azure / vLLM]
-        OTLP[OTLP Collector<br>traces]
+        REDIS[("Redis<br/>budget counters")]
+        QDRANT[("Qdrant<br/>vector index")]
+        EMBED["Embeddings API<br/>text-embedding-3-small"]
+        LLM["Upstream LLM<br/>OpenAI / Azure / vLLM"]
+        OTLP["OTLP Collector<br/>traces"]
     end
 
     A1 -->|POST /v1/chat/completions| AUTH
@@ -72,7 +72,7 @@ The middleware chain is assembled once at startup by `RegisterChain` and is **im
 
 ```mermaid
 graph LR
-    cmd["cmd/agentmesh<br>(main)"]
+    cmd["cmd/agentmesh<br/>(main)"]
 
     subgraph internal
         config["internal/config"]
@@ -139,7 +139,7 @@ sequenceDiagram
     participant REDIS as Redis
     participant LLM as Upstream LLM
 
-    Agent->>OTel: POST /v1/chat/completions<br>Authorization: Bearer am_key_acme<br>X-Agent-ID: agent-001
+    Agent->>OTel: POST /v1/chat/completions<br/>Authorization: Bearer am_key_acme<br/>X-Agent-ID: agent-001
     OTel->>Auth: begin span "proxy"
 
     Auth->>Auth: bearerToken() — case-insensitive CutPrefix
@@ -171,7 +171,7 @@ sequenceDiagram
     CACHE->>CACHE: io.ReadAll + restore body
     CACHE->>CACHE: json.Unmarshal → lastUserContent(req)
 
-    CACHE->>EMBED: POST /v1/embeddings<br>{input: prompt, model: text-embedding-3-small}
+    CACHE->>EMBED: POST /v1/embeddings {input: prompt, model: text-embedding-3-small}
     EMBED-->>CACHE: {data: [{embedding: [float32 x 1536]}]}
 
     CACHE->>QDRANT: Query{filter: must match tenant_id, limit: 1, with_payload: true}
@@ -196,7 +196,7 @@ sequenceDiagram
     PROXY->>PROXY: r.Clone(ctx) — never mutate original
     PROXY->>PROXY: Del "Authorization" + Set "Bearer real-upstream-key"
     PROXY->>PROXY: outreq.Host = upstream.Host
-    PROXY->>LLM: POST /v1/chat/completions<br>Authorization: Bearer sk-real-key
+    PROXY->>LLM: POST /v1/chat/completions Authorization: Bearer sk-real-key
 
     LLM-->>PROXY: 200 {"choices":[...],"usage":{"total_tokens":42}}
     PROXY-->>BUDGET: response written to rec
@@ -251,7 +251,7 @@ sequenceDiagram
     CACHE->>CACHE: io.WriteString(w, entry.Response)
     CACHE-->>Agent: 200 {"choices":[...]} ← from Qdrant, < 5 ms
 
-    note over BUDGET,PROXY: Budget untouched. Redis: 0 tokens deducted.<br>LLM: never called. Carbon: zero inference.
+    note over BUDGET,PROXY: Budget untouched. Redis: 0 tokens deducted. LLM: never called. Carbon: zero inference.
 ```
 
 ---
@@ -263,16 +263,16 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph "Inbound (agent-facing)"
-        IK[am_live_acme_abc123<br>inbound API key]
+        IK["am_live_acme_abc123<br/>inbound API key"]
     end
 
     subgraph "AgentMesh Memory"
-        TM["TenantMap<br>inboundKey -> TenantConfig"]
-        UM["UpstreamKeyMap<br>TenantID -> upstreamKey"]
+        TM["TenantMap<br/>inboundKey → TenantConfig"]
+        UM["UpstreamKeyMap<br/>TenantID → upstreamKey"]
     end
 
     subgraph "Outbound (LLM-facing)"
-        UK[sk-real-openai-key<br>upstream API key]
+        UK["sk-real-openai-key<br/>upstream API key"]
     end
 
     IK -->|Bearer header| TM
@@ -521,8 +521,8 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     A[Redis error on IsBudgetExceeded] --> B{failureMode}
-    B -->|fail-open| C[slog.Warn<br>Allow request through<br>Availability over correctness]
-    B -->|fail-closed| D[503 REDIS_UNAVAILABLE<br>Block request<br>Correctness over availability]
+    B -->|fail-open| C["slog.Warn<br/>Allow request through<br/>Availability over correctness"]
+    B -->|fail-closed| D["503 REDIS_UNAVAILABLE<br/>Block request<br/>Correctness over availability"]
 ```
 
 ---
