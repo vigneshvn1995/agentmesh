@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agentmesh.configmapName" . }}
+  labels:
+    {{- include "agentmesh.labels" . | nindent 4 }}
+data:
+  # agentmesh.yaml is mounted at /etc/agentmesh/agentmesh.yaml inside the container.
+  # Its contents are rendered from .Values.agentmeshConfig via toYaml so the indentation
+  # in values.yaml is faithfully preserved when the file is written to the ConfigMap.
+  agentmesh.yaml: |
+    {{- toYaml .Values.agentmeshConfig | nindent 4 }}

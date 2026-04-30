@@ -1,0 +1,174 @@
+# Default values for agentmesh.
+# Override any value with --set or a custom values file (-f my-values.yaml).
+
+# -- Number of AgentMesh pod replicas. Overridden by HPA when autoscaling is enabled.
+replicaCount: 2
+
+image:
+  # -- Container image repository.
+  repository: ghcr.io/vigneshvn1995/agentmesh
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Image tag. Defaults to the chart's appVersion when empty.
+  tag: "v1.0.0"
+
+# -- Image pull secrets for private registries.
+imagePullSecrets: []
+
+# -- Override the default chart name used for resource naming.
+nameOverride: ""
+
+# -- Override the fully-qualified app name used for resource naming.
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Whether to create a ServiceAccount.
+  create: false
+  # -- Annotations to add to the ServiceAccount.
+  annotations: {}
+  # -- Name of the ServiceAccount to use. Auto-generated if empty and create=true.
+  name: ""
+
+# -- Annotations to add to the Pod template.
+podAnnotations: {}
+
+# -- Security context applied to the Pod.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# -- Security context applied to the agentmesh container.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -- Resource requests and limits for the agentmesh container.
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+autoscaling:
+  # -- Enable Horizontal Pod Autoscaler.
+  enabled: true
+  # -- Minimum number of replicas.
+  minReplicas: 2
+  # -- Maximum number of replicas.
+  maxReplicas: 10
+  # -- Target average CPU utilization (%) across all pods to trigger scaling.
+  targetCPUUtilizationPercentage: 80
+
+service:
+  # -- Kubernetes service type.
+  type: ClusterIP
+  # -- Proxy port exposed on the service (maps to containerPort 8080).
+  proxyPort: 8080
+  # -- Admin port exposed on the service (maps to containerPort 9090).
+  adminPort: 9090
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling.
+tolerations: []
+
+# -- Affinity rules for pod scheduling.
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - agentmesh
+          topologyKey: kubernetes.io/hostname
+
+# -- Additional environment variables injected into the agentmesh container.
+# Use this to pass QDRANT_ENDPOINT, QDRANT_API_KEY, OPENAI_API_KEY, and OTel
+# variables as Kubernetes Secrets rather than hardcoding them here.
+# Example:
+#   extraEnv:
+#     - name: OPENAI_API_KEY
+#       valueFrom:
+#         secretKeyRef:
+#           name: agentmesh-secrets
+#           key: openai-api-key
+extraEnv: []
+
+# -- AgentMesh application configuration.
+# This block is rendered verbatim into a ConfigMap as agentmesh.yaml and
+# mounted at /etc/agentmesh/agentmesh.yaml inside the container.
+#
+# When redis.enabled=true, update agentmeshConfig.redis.address to
+# "<release-name>-redis-master:6379" to point at the bundled Redis service.
+#
+# When qdrant.enabled=true, set QDRANT_ENDPOINT env var (or extraEnv) to
+# "<release-name>-qdrant:6334" and set agentmeshConfig.cache.enabled=true.
+agentmeshConfig:
+  version: v1
+
+  server:
+    proxy_port: 8080
+    admin_port: 9090
+
+  tenants:
+    - tenant_id: example-tenant
+      # Replace with your inbound API key. Agents present this key.
+      api_key: "am_live_replace_me"
+      upstream_url: "https://api.openai.com/v1"
+      # Replace with your real OpenAI (or compatible) API key.
+      # For production, inject this via a Kubernetes Secret + extraEnv.
+      upstream_api_key: "sk-replace-me"
+
+  guardrails:
+    enabled: true
+    loop_detection:
+      window_size: 5m
+      max_identical_hash: 3
+
+  budget:
+    per_agent_daily_usd: 2.00
+    per_tenant_daily_usd: 50.00
+    request_timeout: 30s
+    tokens_per_usd: 1000
+
+  redis:
+    # When using the bundled Redis subchart, set this to:
+    #   "<release-name>-redis-master:6379"
+    address: "localhost:6379"
+    failure_mode: fail-open
+
+  cache:
+    enabled: false
+
+# -- Subchart: Bitnami Redis.
+# Enable with --set redis.enabled=true for a sandbox deployment.
+# See https://github.com/bitnami/charts/tree/main/bitnami/redis for full values.
+redis:
+  enabled: false
+  auth:
+    enabled: false
+  architecture: standalone
+  master:
+    persistence:
+      enabled: false
+
+# -- Subchart: Qdrant.
+# Enable with --set qdrant.enabled=true for a sandbox deployment.
+# After enabling, also set agentmeshConfig.cache.enabled=true and
+# set QDRANT_ENDPOINT=<release-name>-qdrant via extraEnv.
+# See https://github.com/qdrant/qdrant-helm for full values.
+qdrant:
+  enabled: false
+  persistence:
+    enabled: false

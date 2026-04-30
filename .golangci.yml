@@ -1,0 +1,61 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck        # unchecked errors
+    - govet           # suspicious constructs (printf mismatch, etc.)
+    - staticcheck     # SA/ST/QF/S checks (supersedes megacheck)
+    - ineffassign     # assigned-but-never-used variables
+    - unused          # exported symbols with no callers
+    - misspell        # common English misspellings in comments/strings
+    - revive          # drop-in replacement for golint
+    - goimports       # import grouping + gofmt
+    - gosec           # OWASP / security checks (G-series)
+    - bodyclose       # HTTP response bodies not closed
+    - noctx           # http.NewRequest without context
+    - gocritic        # opinionated suggestions
+    - prealloc        # slice pre-allocation hints
+    - unconvert       # unnecessary type conversions
+
+linters-settings:
+  goimports:
+    local-prefixes: agentmesh
+
+  revive:
+    rules:
+      - name: exported
+        severity: warning
+      - name: var-naming
+        severity: warning
+
+  gosec:
+    excludes:
+      - G104  # Errors unhandled in defer — handled where it matters
+      - G115  # integer overflow conversion — we validate ranges in config
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+    disabled-checks:
+      - commentedOutCode   # allow commented example snippets in tests
+
+issues:
+  exclude-rules:
+    # Test helpers don't need exported-function doc comments.
+    - path: "_test\\.go"
+      linters: [revive]
+      text: "exported function .* should have comment"
+
+    # Allow t.Fatal in test helpers.
+    - path: "_test\\.go"
+      linters: [gocritic]
+      text: "exitAfterDefer"
+
+  # Show all issues of the same type, not just the first few.
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+run:
+  timeout: 5m
+  tests: true
