@@ -1,6 +1,5 @@
-version: "2"
-
 linters:
+  disable-all: true
   enable:
     - errcheck        # unchecked errors
     - govet           # suspicious constructs (printf mismatch, etc.)
@@ -58,4 +57,5 @@ issues:
 
 run:
   timeout: 5m
+  go: "1.22"  # keep below golangci-lint's built Go version to avoid version check error
   tests: true
