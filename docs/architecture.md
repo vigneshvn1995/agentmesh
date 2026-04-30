@@ -278,11 +278,6 @@ flowchart LR
     IK -->|Bearer header| TM
     TM -->|O1 lookup, inject ctx| UM
     UM -->|credential swap in Clone| UK
-
-    style IK fill:#ffeeba
-    style UK fill:#d4edda
-    style TM fill:#cce5ff
-    style UM fill:#cce5ff
 ```
 
 Both maps are written **once** during `NewServer` and are read-only for the entire lifetime of the process. No mutex is needed — Go's memory model guarantees visibility of writes before a goroutine is started.
