@@ -57,5 +57,4 @@ issues:
 
 run:
   timeout: 5m
-  go: "1.22"  # keep below golangci-lint's built Go version to avoid version check error
   tests: true
