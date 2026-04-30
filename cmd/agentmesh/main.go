@@ -192,7 +192,7 @@ func main() {
 		if err := <-serverErrCh; err != nil {
 			slog.Error("server error", "error", err)
 			cancel()
-			os.Exit(1)
+			os.Exit(1) //nolint:gocritic // exitAfterDefer: cancel() was already called above; skipping the defer is intentional on fatal exit
 		}
 	}
 }

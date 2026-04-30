@@ -36,8 +36,8 @@ type alwaysHitStore struct {
 	response string
 }
 
-func (s *alwaysHitStore) Search(_ context.Context, tenantID string, _ []float32, _ float32) (*cache.CacheEntry, bool, error) {
-	return &cache.CacheEntry{
+func (s *alwaysHitStore) Search(_ context.Context, tenantID string, _ []float32, _ float32) (*cache.Entry, bool, error) {
+	return &cache.Entry{
 		TenantID:  tenantID,
 		Prompt:    "test",
 		Response:  s.response,
@@ -45,7 +45,7 @@ func (s *alwaysHitStore) Search(_ context.Context, tenantID string, _ []float32,
 	}, true, nil
 }
 
-func (s *alwaysHitStore) Store(_ context.Context, _ cache.CacheEntry, _ []float32) error {
+func (s *alwaysHitStore) Store(_ context.Context, _ cache.Entry, _ []float32) error {
 	// Cache hits never trigger a Store; this is a no-op stub.
 	return nil
 }

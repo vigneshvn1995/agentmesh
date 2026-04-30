@@ -76,7 +76,7 @@ const (
 // A deterministic UUIDv5 derived from (tenantID + prompt) is used as the
 // point ID so that upserting the same prompt twice is idempotent — Qdrant
 // will overwrite rather than create a duplicate.
-func (q *QdrantStore) Store(ctx context.Context, entry CacheEntry, embedding []float32) error {
+func (q *QdrantStore) Store(ctx context.Context, entry Entry, embedding []float32) error {
 	// Deterministic ID: same tenant + prompt always maps to the same UUID.
 	pointID := uuid.NewSHA1(uuid.NameSpaceURL, []byte(entry.TenantID+entry.Prompt))
 
@@ -112,7 +112,7 @@ func (q *QdrantStore) Store(ctx context.Context, entry CacheEntry, embedding []f
 //
 // SECURITY: The must-match filter on tenant_id is not optional. Removing it
 // would allow one tenant to receive another tenant's cached LLM responses.
-func (q *QdrantStore) Search(ctx context.Context, tenantID string, embedding []float32, similarityThreshold float32) (*CacheEntry, bool, error) {
+func (q *QdrantStore) Search(ctx context.Context, tenantID string, embedding []float32, similarityThreshold float32) (*Entry, bool, error) {
 	limit := uint64(1)
 	results, err := q.client.Query(ctx, &qdrant.QueryPoints{
 		CollectionName: q.collectionName,
@@ -153,7 +153,7 @@ func (q *QdrantStore) Search(ctx context.Context, tenantID string, embedding []f
 		return nil, false, nil
 	}
 
-	entry := &CacheEntry{
+	entry := &Entry{
 		TenantID:  payload[payloadTenantID].GetStringValue(),
 		Prompt:    payload[payloadPrompt].GetStringValue(),
 		Response:  payload[payloadResponse].GetStringValue(),

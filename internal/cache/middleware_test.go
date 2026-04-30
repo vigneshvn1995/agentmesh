@@ -28,12 +28,12 @@ func (mockEmbedder) Embed(_ context.Context, _ string) ([]float32, error) {
 // the async goroutine without time.Sleep.
 type mockVectorStore struct {
 	Hit       bool
-	StoreChan chan CacheEntry
+	StoreChan chan Entry
 }
 
-func (m *mockVectorStore) Search(_ context.Context, _ string, _ []float32, _ float32) (*CacheEntry, bool, error) {
+func (m *mockVectorStore) Search(_ context.Context, _ string, _ []float32, _ float32) (*Entry, bool, error) {
 	if m.Hit {
-		return &CacheEntry{
+		return &Entry{
 			TenantID:  "tenant-test",
 			Prompt:    "hello",
 			Response:  `{"cached": true}`,
@@ -43,7 +43,7 @@ func (m *mockVectorStore) Search(_ context.Context, _ string, _ []float32, _ flo
 	return nil, false, nil
 }
 
-func (m *mockVectorStore) Store(_ context.Context, entry CacheEntry, _ []float32) error {
+func (m *mockVectorStore) Store(_ context.Context, entry Entry, _ []float32) error {
 	m.StoreChan <- entry
 	return nil
 }
@@ -84,7 +84,7 @@ func TestCacheMiddleware_Hit(t *testing.T) {
 
 	store := &mockVectorStore{
 		Hit:       true,
-		StoreChan: make(chan CacheEntry, 1),
+		StoreChan: make(chan Entry, 1),
 	}
 	embedder := mockEmbedder{}
 	cfg := Config{SimilarityThreshold: 0.9}
@@ -124,7 +124,7 @@ func TestCacheMiddleware_Miss(t *testing.T) {
 	store := &mockVectorStore{
 		Hit: false,
 		// Buffered so the goroutine never blocks if the test is slow to read.
-		StoreChan: make(chan CacheEntry, 1),
+		StoreChan: make(chan Entry, 1),
 	}
 	embedder := mockEmbedder{}
 	cfg := Config{SimilarityThreshold: 0.9}

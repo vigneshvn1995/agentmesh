@@ -87,7 +87,7 @@ func TestProxyServer(t *testing.T) {
 			name:        "missing auth header returns 401",
 			upstreamURL: "http://127.0.0.1:1",
 			buildReq: func() *http.Request {
-				return httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+				return httptest.NewRequest(http.MethodPost, "/v1/chat/completions", http.NoBody)
 			},
 			wantCode: http.StatusUnauthorized,
 			wantBody: "Unauthorized",
@@ -96,7 +96,7 @@ func TestProxyServer(t *testing.T) {
 			name:        "invalid API key returns 401",
 			upstreamURL: "http://127.0.0.1:1",
 			buildReq: func() *http.Request {
-				req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+				req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", http.NoBody)
 				req.Header.Set("Authorization", "Bearer wrong-key-000")
 				return req
 			},
@@ -109,7 +109,7 @@ func TestProxyServer(t *testing.T) {
 			name:        "upstream unavailable returns 502",
 			upstreamURL: "http://127.0.0.1:1",
 			buildReq: func() *http.Request {
-				req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+				req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", http.NoBody)
 				req.Header.Set("Authorization", "Bearer "+testInboundKey)
 				return req
 			},
@@ -165,7 +165,7 @@ func TestProxyServer(t *testing.T) {
 
 		srv := mustNewServer(t, upstream.URL)
 
-		req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+		req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", http.NoBody)
 		req.Header.Set("Authorization", "Bearer "+testInboundKey)
 		rec := httptest.NewRecorder()
 

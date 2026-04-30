@@ -205,7 +205,7 @@ func Middleware(store VectorStore, embedder Embedder, cfg Config) func(http.Hand
 
 				storeCtx := context.WithoutCancel(r.Context())
 				go func() {
-					newEntry := CacheEntry{
+					newEntry := Entry{
 						TenantID:  tenantID,
 						Prompt:    prompt,
 						Response:  string(bodySnapshot),

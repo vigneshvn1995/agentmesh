@@ -35,10 +35,10 @@ import (
 	"time"
 )
 
-// CacheEntry is the value stored in and retrieved from the vector cache.
+// Entry is the value stored in and retrieved from the vector cache.
 // It captures the normalised prompt, the full upstream response, and enough
 // metadata to support TTL enforcement and tenant-scoped eviction.
-type CacheEntry struct {
+type Entry struct {
 	TenantID  string
 	Prompt    string
 	Response  string
@@ -62,9 +62,9 @@ type VectorStore interface {
 	// Search returns the closest cached entry whose cosine similarity to
 	// embedding meets or exceeds similarityThreshold. The second return value
 	// is false when no sufficiently similar entry exists.
-	Search(ctx context.Context, tenantID string, embedding []float32, similarityThreshold float32) (*CacheEntry, bool, error)
+	Search(ctx context.Context, tenantID string, embedding []float32, similarityThreshold float32) (*Entry, bool, error)
 
 	// Store persists entry indexed by embedding. Implementations must be safe
 	// for concurrent calls.
-	Store(ctx context.Context, entry CacheEntry, embedding []float32) error
+	Store(ctx context.Context, entry Entry, embedding []float32) error
 }
