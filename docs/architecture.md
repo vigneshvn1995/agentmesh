@@ -262,7 +262,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph "Inbound (agent-facing)"
+    subgraph "Inbound - agent-facing"
         IK["am_live_acme_abc123<br/>inbound API key"]
     end
 
@@ -271,12 +271,12 @@ flowchart LR
         UM["UpstreamKeyMap<br/>TenantID → upstreamKey"]
     end
 
-    subgraph "Outbound (LLM-facing)"
+    subgraph "Outbound - LLM-facing"
         UK["sk-real-openai-key<br/>upstream API key"]
     end
 
     IK -->|Bearer header| TM
-    TM -->|O(1) lookup, inject ctx| UM
+    TM -->|O1 lookup, inject ctx| UM
     UM -->|credential swap in Clone| UK
 
     style IK fill:#ffeeba
