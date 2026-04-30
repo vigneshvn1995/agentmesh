@@ -25,7 +25,10 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          args: ./...
+          # --go=1.24: golangci-lint is built with Go 1.24; passing the language
+          # version explicitly avoids the "targeted Go version is higher" hard error.
+          # No lint rules are affected — Go 1.24→1.26 adds no new syntax.
+          args: --go=1.24 ./...
           skip-cache: false
 
       - name: Run tests with race detector
